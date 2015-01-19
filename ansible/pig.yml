@@ -1,0 +1,24 @@
+---
+# pig-tools script
+
+- hosts: local
+  tags:
+    - local
+  gather_facts: false
+  tasks:
+    - name: "pig {{ PARAM }} {{ SCRIPT }}"
+      register: result
+      shell: "cd {{ PROJECT_PATH }};{{ PIG_HOME }}/bin/pig {{ PARAM }} {{ SCRIPT }}"
+      ignore_errors: True
+    - include: tasks/std.yml
+
+- hosts: remote
+  tags:
+    - remote
+  gather_facts: false
+  tasks:
+    - name: "pig {{ PARAM }} {{ SCRIPT }}"
+      register: result
+      shell: "cd {{ PROJECT_PATH }};{{ PIG_HOME }}/bin/pig {{ PARAM }} {{ SCRIPT }}"
+      ignore_errors: True
+    - include: tasks/std.yml

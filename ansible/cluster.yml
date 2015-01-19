@@ -1,0 +1,76 @@
+---
+# cluster-tools script
+# upload:PARAM=$param SOURCE=$SOURCE DEST=$DEST LOCAL_PATH=$LOCAL_PATH LOCAL_TMP=$TMP REMOTE_PATH=$REMOTE_PATH REMOTE_TMP=$REMOTE_TMP USER=$USER PROJECT=$PROJECT
+# download:SOURCE=$SOURCE DEST=$DEST
+
+- hosts: local
+  tags: 
+    - upload
+  gather_facts: false
+  vars:
+    file_name: "{{ USER }}_{{ PROJECT }}_{{ SOURCE | b64encode }}.tar.gz"
+  tasks:
+    - name: "tar -zcvf {{ LOCAL_TMP }}/{{ file_name }} {{ SOURCE }} {{ PARAM }}"
+      register: result
+      shell: "cd {{ LOCAL_PATH }}; tar -zcvf {{ LOCAL_TMP }}/{{ file_name }} {{ SOURCE }} {{ PARAM }}"
+      ignore_errors: True
+    - include: tasks/std.yml
+
+- hosts: remote
+  tags: 
+    - upload
+  gather_facts: false
+  vars:
+    file_name: "{{ USER }}_{{ PROJECT }}_{{ SOURCE | b64encode }}.tar.gz"
+  tasks:
+    - name: "mk remote dir"
+      shell: "mkdir -p {{ REMOTE_PATH }}"
+    - name: "upload file to remote"
+      register: result
+      unarchive: src="{{ LOCAL_TMP }}/{{ file_name }}" dest="{{ REMOTE_PATH }}"
+
+- hosts: local
+  tags: 
+    - upload
+  gather_facts: false
+  vars:
+    file_name: "{{ USER }}_{{ PROJECT }}_{{ SOURCE | b64encode }}.tar.gz"
+  tasks:
+    - name: "rm {{ LOCAL_TMP }}/{{ file_name }}"
+      shell: "rm -rf {{ LOCAL_TMP }}/{{ file_name }}"
+
+- hosts: remote
+  tags: 
+    - download
+  gather_facts: false
+  vars:
+    file_name: "{{ USER }}_{{ PROJECT }}_{{ SOURCE | b64encode }}.tar.gz"
+  tasks:
+    - name: "tar -zcvf {{ REMOTE_TMP }}/{{ file_name }} {{ SOURCE }} {{ PARAM }}"
+      register: result
+      shell: "cd {{ REMOTE_PATH }}; tar -zcvf {{ REMOTE_TMP }}/{{ file_name }} {{ SOURCE }} {{ PARAM }}"
+    - include: tasks/std.yml
+
+- hosts: remote
+  tags: 
+    - download
+  gather_facts: false
+  vars:
+    file_name: "{{ USER }}_{{ PROJECT }}_{{ SOURCE | b64encode }}.tar.gz"
+  tasks:
+    - name: "download file from remote"
+      register: result
+      fetch: src="{{ REMOTE_TMP }}/{{ file_name }}" dest="{{ LOCAL_TMP }}/{{ file_name }}" flat=yes
+    - name: "rm {{ REMOTE_TMP }}/{{ file_name }}"
+      shell: "rm -rf {{ REMOTE_TMP }}/{{ file_name }}"
+
+- hosts: local
+  tags:
+    - download
+  gather_facts: false
+  vars:
+    file_name: "{{ USER }}_{{ PROJECT }}_{{ SOURCE | b64encode }}.tar.gz"
+  tasks:
+    - shell: "cd {{ LOCAL_PATH }}; tar -xzvf {{ LOCAL_TMP }}/{{ file_name }}"
+    - shell: "rm -rf {{ LOCAL_TMP }}/{{ file_name }}"
+    

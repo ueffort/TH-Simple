@@ -1,0 +1,64 @@
+---
+# aws s3 
+- name: create touch file
+  tags: 
+    - -touchz aws
+  shell: "touch {{ REMOTE | basename }}"
+
+- name: touch file to s3
+  tags: 
+    - -touchz aws
+  shell: "aws s3 cp {{ REMOTE | basename }} {{ REMOTE }}"
+  ignore_errors: True
+
+- name: remote touch file
+  tags: 
+    - -touchz aws
+  shell: "rm -rf {{ REMOTE | basename }}"
+  ignore_errors: True
+
+- name: put file to s3
+  tags: 
+    - -put aws
+  shell: "aws s3 cp {{ LOCAL }} {{ REMOTE }}"
+  ignore_errors: True
+
+- name: remove file from s3
+  tags:
+    - -rm aws
+  shell: "aws s3 rm {{ REMOTE }}"
+  ignore_errors: True
+
+- name: remove file from s3
+  tags:
+    - -rmr aws
+  shell: "aws s3 rm {{ REMOTE }} --recursive"
+  ignore_errors: True
+
+- name: ls file from s3 dir
+  tags:
+    - -ls aws
+  shell: "aws s3 ls {{ REMOTE }}"
+  ignore_errors: True
+
+- name: test file from s3
+  tags:
+    - -test aws
+  shell: "aws s3 cp {{ REMOTE }} {{ REMOTE | basename }}"
+  ignore_errors: True
+
+- name: delete test file
+  tags:
+    - -test aws
+  shell: "rm {{ REMOTE | basename }}"
+  ignore_errors: True
+
+- name: get file from s3
+  tags:
+    - -get aws
+  shell: "aws s3 cp {{ REMOTE }} {{ LOCAL }}"
+  ignore_errors: True
+
+# 执行完都调用std命令集合，用于输出
+- include: tasks/std.yml
+ 

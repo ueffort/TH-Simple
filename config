@@ -1,0 +1,19 @@
+# 本地环境配置
+ANSIBLE_PATH=$ROOT_PATH/ansible
+
+LOCAL_HADOOP_HOME=/usr/local/hadoop
+LOCAL_HADOOP_TMP=/tmp
+LOCAL_PIG_HOME=/usr/local/pig
+LOCAL_TMP=/tmp
+
+# 集群环境配置
+REMOTE_HADOOP_HOME=/usr/local/hadoop
+REMOTE_HADOOP_TMP=/tmp
+REMOTE_PIG_HOME=/usr/local/pig
+REMOTE_TMP=/tmp
+
+REMOTE_PATH=/data
+
+# 不同类型的集群配置
+#REMOTE_TYPE=aws
+#REMOTE_STORAGE_PREFIX=s3://FILE

@@ -1,0 +1,42 @@
+---
+# hadoop-tools script
+
+- hosts: local
+  tags: 
+    - dfs local
+  gather_facts: false
+  tasks:
+    - name: "hadoop fs dfs {{ SOURCE }} {{ DEST }}"
+      register: result
+      shell: "{{ HADOOP_HOME }}/bin/hadoop dfs {{ SOURCE }} {{ DEST }}"
+      ignore_errors: True
+    - include: tasks/std.yml
+
+- hosts: remote
+  tags:
+    - dfs remote
+  gather_facts: false
+  roles:
+    - { role: "dfs", tags: ["{{ COMMAND }} {{ REMOTE_TYPE }}"] }
+
+- hosts: local
+  tags: 
+    - base local
+  gather_facts: false
+  tasks:
+    - name: "hadoop {{ CMD }} {{ COMMAND }} {{ PARAM }}"
+      register: result
+      shell: "{{ HADOOP_HOME }}/bin/hadoop {{ CMD }} {{ COMMAND }} {{ PARAM }}"
+      ignore_errors: True
+    - include: tasks/std.yml
+
+- hosts: remote
+  tags: 
+    - base remote
+  gather_facts: false
+  tasks:
+    - name: "hadoop {{ CMD }} {{ COMMAND }} {{ PARAM }}"
+      register: result
+      shell: "{{ HADOOP_HOME }}/bin/hadoop {{ CMD }} {{ COMMAND }} {{ PARAM }}"
+      ignore_errors: True
+    - include: tasks/std.yml

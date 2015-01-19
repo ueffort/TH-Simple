@@ -1,0 +1,25 @@
+---
+# execute shell command
+# SHELL:SHELL=$SHELL
+
+- hosts: remote
+  tags:
+    - remote
+  gather_facts: false
+  tasks:
+    - name: "cluter shell `{{ SHELL }}`"
+      register: result
+      shell: "cd {{ PROJECT_PATH }};{{ SHELL }}"
+      ignore_errors: True
+    - include: tasks/std.yml
+
+- hosts: localhost
+  tags:
+    - local
+  gather_facts: false
+  tasks:
+    - name: "local shell `{{ SHELL }}`"
+      register: result
+      shell: "cd {{ PROJECT_PATH }};{{ SHELL }}"
+      ignore_errors: True
+    - include: tasks/std.yml

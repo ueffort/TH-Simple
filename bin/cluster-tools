@@ -1,0 +1,105 @@
+#!/bin/bash
+CURRENT_PATH=$(pwd);
+ROOT_PATH=$(cd `dirname $0`/../; pwd);
+cd $CURRENT_PATH;
+
+. $ROOT_PATH/script/common.sh
+
+#开始
+function usage() {
+	echo "usage: <exec> --param"
+	echo "  type: upload download shell"
+}
+
+if [ $? != 0 ] ; then usage >&2 ; exit 1 ; fi
+
+CMD=$1;
+
+case $CMD in
+	upload)
+		param=
+		i=1
+		b[1]="."
+		b[2]="."
+		for p in $*
+		do
+			case $p in 
+				upload)
+				;;
+				-*)
+					param=$param" "$p
+				;;
+				*)
+					b[$i]=$p
+					i=$[$i + 1]
+				;;
+			esac
+		done
+		eval "ansible_play cluster \"PARAM='"$param"' SOURCE="${b[1]}" LOCAL_PATH=$LOCAL_PATH LOCAL_TMP=$LOCAL_TMP REMOTE_PATH=$REMOTE_PATH REMOTE_TMP=$REMOTE_TMP USER=$USER PROJECT=$PROJECT\" \"upload\""
+		out_local=$ANSIBLE_OUT
+	;;
+	download)
+		param=
+		i=1
+		b[1]="."
+		b[2]="."
+		for p in $*
+		do
+			case $p in 
+				download)
+				;;
+				-*)
+					param=$param" "$p
+				;;
+				*)
+					b[$i]=$p
+					i=$[$i + 1]
+				;;
+			esac
+		done
+		eval "ansible_play cluster \"PARAM='"$param"' SOURCE="${b[1]}" LOCAL_PATH=$LOCAL_PATH LOCAL_TMP=$LOCAL_TMP REMOTE_PATH=$REMOTE_PATH REMOTE_TMP=$REMOTE_TMP USER=$USER PROJECT=$PROJECT\" \"download\""
+		out_local=$ANSIBLE_OUT
+	;;
+	shell)
+		for p in $*
+		do
+			case $p in 
+				$CMD)
+				;;
+				*)
+					param=$param" "$p;
+				;;
+			esac
+		done
+		param="SHELL='\'"$param"\'' PROJECT_PATH={PROJECT_PATH}"
+		cluster_host=$CLUSTER_HOST
+		if [ $cluster_host = $LOCAL_MODE -o $cluster_host = $BOTH_MODE ]
+		then
+			shell=`eval "replace_globals \"$param\" $LOCAL_MODE"`
+			eval "ansible_play shell \"$shell\" \"$LOCAL_MODE\""
+			out_local=$ANSIBLE_OUT
+		fi
+		if [ $cluster_host = $REMOTE_MODE -o $cluster_host = $BOTH_MODE ]
+		then
+			shell=`eval "replace_globals \"$param\" $REMOTE_MODE"`
+			eval "ansible_play shell \"$shell\" \"$REMOTE_MODE\""
+			out_remote=$ANSIBLE_OUT
+		fi
+	;;
+	*)
+		usage
+		exit
+	;;
+esac
+e=0
+for i in $out_local $out_remote
+do
+	if [ -z $i ]
+	then
+		continue
+	fi
+	parse_ansible_return $i
+	e=$[$e + $?]
+done
+exit $e
+

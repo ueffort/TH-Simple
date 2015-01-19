@@ -1,0 +1,82 @@
+#!/bin/bash
+CURRENT_PATH=$(pwd);
+ROOT_PATH=$(cd `dirname $0`/../; pwd);
+cd $CURRENT_PATH;
+
+. $ROOT_PATH/script/common.sh
+
+#开始
+function usage() {
+	echo "--verbose usage: <exec> --param"
+	echo "  type: fs (other)"
+}
+if [ $? != 0 ] ; then usage >&2 ; exit 1 ; fi
+
+cluster_host=$CLUSTER_HOST
+
+CMD=$1;
+param=
+case $CMD in
+	dfs)
+		case $2 in
+			-ls|-rmr|-rm|-touchz|-test)
+				remote_path=$3;
+			;;
+			-get)
+				local_path=$4;
+				remote_path=$3;
+			;;
+			-put)
+				local_path=$3;
+				remote_path=$4;
+			;;
+			*)
+				echo 'not support $2 command!'
+				exit 1
+		esac
+		TAG=$CMD
+		param=`echo LOCAL=$local_path REMOTE=$remote_path SOURCE=$3 DEST=$4`
+		command=$2
+	;;
+	*)
+		for p in $*
+		do
+			case $p in 
+				$CMD|$2)
+				;;
+				*)
+					param=$param" "$p;
+				;;
+			esac
+		done
+		TAG=base
+		command=$2
+		param="PARAM='\'"$param"\''"
+	;;
+esac
+# 通过TAG区分cmd命令及运行的机器，REMOTE_TYPE变量区分远程集群模式（在ansible中，用role区分REMOTE_TYPE）
+if [ $cluster_host = $LOCAL_MODE -o $cluster_host = $BOTH_MODE ]
+then
+	param=`eval "replace_globals \"$param\" \"$LOCAL_MODE\""`
+	eval "ansible_play hadoop \"CMD=$CMD COMMAND=$command $param HADOOP_HOME=$LOCAL_HADOOP_HOME REMOTE_TYPE=$REMOTE_TYPE\" \"$TAG $LOCAL_MODE\""
+	out_local=$ANSIBLE_OUT
+fi
+if [ $cluster_host = $REMOTE_MODE -o $cluster_host = $BOTH_MODE ]
+then
+	param=`eval "replace_globals \"$param\" \"$REMOTE_MODE\""`
+	eval "ansible_play hadoop \"CMD=$CMD COMMAND=$command $param HADOOP_HOME=$REMOTE_HADOOP_HOME REMOTE_TYPE=$REMOTE_TYPE\" \"$TAG $REMOTE_MODE\""
+	out_remote=$ANSIBLE_OUT
+fi
+
+e=0
+for i in $out_local $out_remote
+do
+	if [ -z $i ]
+	then
+		continue
+	fi
+	parse_ansible_return $i
+	e=$[$e + $?]
+done
+
+exit $e

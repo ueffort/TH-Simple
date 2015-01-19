@@ -1,0 +1,23 @@
+---
+
+- name: std start
+  shell: "touch {{ RETURN_LOG }}_{{ result.rc }}"
+  delegate_to: localhost
+
+- name: stdout_lines to file
+  shell: "echo '{{ item }}' >> {{ RETURN_LOG }}_{{ result.rc }}"
+  with_items: result.stdout_lines
+  delegate_to: localhost
+  when: result.stdout_lines
+
+#- name: stderr to file
+#  shell: "echo '{{ result.stdout }}' >> {{ RETURN_LOG }}_{{ result.rc }}"
+#  delegate_to: localhost
+#  when: result.stdout
+
+- name: stderr to file
+  shell: "echo '{{ result.stderr }}' >> {{ RETURN_LOG }}_{{ result.rc }}"
+  delegate_to: localhost
+  when: result.stderr
+  failed_when: result.stderr
+

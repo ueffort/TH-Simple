@@ -1,0 +1,127 @@
+#!/bin/bash
+CURRENT_PATH=$(pwd);
+ROOT_PATH=$(cd `dirname $0`/../; pwd);
+cd $CURRENT_PATH;
+
+. $ROOT_PATH/script/common.sh
+
+#开始
+#--param:原先pig执行的参数，用引号包含所有参数
+#--type:分为本地(local)和集群(remote)，为空则表示both
+#--local:本地执行
+#--remote:集群执行
+#--combine:如果设定为true，则自动将{script}-combine.pig脚本作为执行完后的合并脚本，用于对local和remote分别执行script后的数据合并脚本，如果type为both则会执行，否则不执行
+#	合并逻辑：执行script后，将存放在CUMBINE_PATH内的数据下载到本地并且存放到本地集群，将2个数据通过combine脚本进行合并，并且最终存放在本地集群
+#script:执行的脚本
+function usage() {
+	echo "usage: --combine (-v -param asdf -param asdf) script.pig"
+}
+
+if [ $? != 0 ] ; then usage >&2 ; exit 1 ; fi
+
+function get_pig_script_name(){
+	echo `dirname $1`"/"`basename $1 .pig`;
+}
+
+function combine(){
+	echo "================>combine step<==============";
+	$ROOT_PATH/hadoop-tools --remote fs -get "{COMBINE_PATH}" "$REMOTE_TMP/$TMP_COMBINE_PATH"
+	$ROOT_PATH/cluster-tools download "$REMOTE_TMP/$TMP_COMBINE_PATH" "$LOCAL_TMP/"
+	$ROOT_PATH/cluster-tools --remote shell "rm -rf $REMOTE_TMP/$TMP_COMBINE_PATH"
+	$ROOT_PATH/hadoop-tools --local fs -put "$LOCAL_TMP/$TMP_COMBINE_PATH" "{COMBINE_REMOTE}"
+	$ROOT_PATH/cluster-tools --local shell "rm -rf $LOCAL_TMP/$TMP_COMBINE_PATH"
+	param="-param COMBINE_LOCAL={COMBINE_LOCAL} -param COMBINE_REMOTE={COMBINE_REMOTE}"
+	pig_play $COMBINE_SCRIPT $param $LOCAL_MODE
+}
+
+function pig_play(){
+	script=$1
+	param=$2
+	host=$3
+	back=$4
+	
+	param=$param" -param STORAGE_PREFIX={STORAGE_PREFIX} -param PROJECT_PATH={PROJECT_PATH} -param CLUSTER_TYPE={CLUSTER_TYPE} -param COMBINE_PATH={COMBINE_PATH}"
+	param="PARAM='\'"$param"\'' PROJECT_PATH={PROJECT_PATH}"
+	param=`eval "replace_globals \"$param\" \"$host\""`
+	
+	if [ $host = $REMOTE_MODE ]
+	then
+		pig_home=$REMOTE_PIG_HOME
+	elif [ $host = $LOCAL_MODE ]
+	then
+		pig_home=$REMOTE_PIG_HOME
+	fi
+	
+	eval "ansible_play pig \"$param SCRIPT=$script PIG_HOME=$pig_home\" \"$host\" $back"
+}
+
+cluster_host=$CLUSTER_HOST
+
+combine=
+param=
+export SCRIPT=
+COMBINE_SCRIPT=
+
+while [ -n "$*" ]
+do
+	case $1 in
+		--combine)
+			combine=true
+		shift ;;
+		-*)
+			param=$param" "$1" "$2;
+		shift 2;;
+		*)
+			export SCRIPT=$1;
+			break
+		shift ;;
+    esac
+done
+
+if [ -z $SCRIPT ]
+then
+	usage
+	exit 1
+fi
+
+if [ $cluster_host = $LOCAL_MODE -o $cluster_host = $BOTH_MODE ]
+then
+	eval "pig_play $SCRIPT \""$param"\" $LOCAL_MODE true"
+	out_local=$ANSIBLE_OUT
+fi
+if [ $cluster_host = $REMOTE_MODE -o $cluster_host = $BOTH_MODE ]
+then
+	eval "pig_play $SCRIPT \""$param"\" $REMOTE_MODE true"
+	out_remote=$ANSIBLE_OUT
+fi
+
+wait
+e=0
+for i in $out_local $out_remote
+do
+	if [ -z $i ]
+	then
+		continue
+	fi
+	parse_ansible_return $i
+	e=$[$e + $?]
+done
+
+if [ $e -gt 1 ]
+then
+	exit $e
+fi
+
+if [ ! -z "$combine" -a $cluster_host != $LOCAL_MODE ]
+then
+	if [ -z $COMBINE_SCRIPT ]
+	then
+		# 自动绑定合并的pig脚本
+		COMBINE_SCRIPT=`get_pig_script_name $SCRIPT`"-combine.pig"
+	fi
+	`combine`
+	parse_ansible_return $ANSIBLE_OUT
+	exit $?
+fi
+exit
+
