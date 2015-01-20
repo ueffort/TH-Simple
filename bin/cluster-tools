@@ -35,7 +35,20 @@ case $CMD in
 				;;
 			esac
 		done
-		eval "ansible_play cluster \"PARAM='"$param"' SOURCE="${b[1]}" LOCAL_PATH=$LOCAL_PATH LOCAL_TMP=$LOCAL_TMP REMOTE_PATH=$REMOTE_PATH REMOTE_TMP=$REMOTE_TMP USER=$USER PROJECT=$PROJECT\" \"upload\""
+		source=${b[1]}
+		dest=${b[2]}
+		local_path=$LOCAL_PATH
+		remote_path=$REMOTE_PATH
+		if [ ${source:0:1} = "/" ]
+		then
+			local_path=`dirname $source`
+			source=`basename $source`
+		fi
+		if [ ${dest:0:1} = "/" ]
+		then
+			remote_path=$dest"/"
+		fi
+		eval "ansible_play cluster \"PARAM='"$param"' SOURCE="$source" LOCAL_PATH=$local_path LOCAL_TMP=$LOCAL_TMP REMOTE_PATH=$remote_path REMOTE_TMP=$REMOTE_TMP USER=$USER PROJECT=$PROJECT\" \"upload\""
 		out_local=$ANSIBLE_OUT
 	;;
 	download)
@@ -57,7 +70,20 @@ case $CMD in
 				;;
 			esac
 		done
-		eval "ansible_play cluster \"PARAM='"$param"' SOURCE="${b[1]}" LOCAL_PATH=$LOCAL_PATH LOCAL_TMP=$LOCAL_TMP REMOTE_PATH=$REMOTE_PATH REMOTE_TMP=$REMOTE_TMP USER=$USER PROJECT=$PROJECT\" \"download\""
+		source=${b[1]}
+		dest=${b[2]}
+		local_path=$LOCAL_PATH
+		remote_path=$REMOTE_PATH
+		if [ ${source:0:1} = "/" ]
+		then
+			remote_path=`dirname $source`
+			source=`basename $source`
+		fi
+		if [ ${dest:0:1} = "/" ]
+		then
+			local_path=$dest
+		fi
+		eval "ansible_play cluster \"PARAM='"$param"' SOURCE="$source" LOCAL_PATH=$local_path LOCAL_TMP=$LOCAL_TMP REMOTE_PATH=$remote_path REMOTE_TMP=$REMOTE_TMP USER=$USER PROJECT=$PROJECT\" \"download\""
 		out_local=$ANSIBLE_OUT
 	;;
 	shell)
