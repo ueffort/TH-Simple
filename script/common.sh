@@ -13,8 +13,9 @@ export REMOTE_PATH=$REMOTE_PATH/$USER/$PROJECT;
 export LOCAL_PATH=$CURRENT_PATH;
 export TIMESTAMP=`date +%s`
 export TMP_COMBINE_PATH="/"${USER}"_"${PROJECT}"_"${TIMESTAMP}
-export TMP_ANSIBLE_PATH=$ANSIBLE_PATH"/tmp/"`date +%Y-%m-%d`"/"${PROJECT}
+export TMP_ANSIBLE_PATH=$ANSIBLE_PATH"/tmp/"`date +%Y-%m-%d`"/"${USER}_${PROJECT}
 mkdir -p $TMP_ANSIBLE_PATH
+chmod -R 777 $ANSIBLE_PATH"/tmp/"
 
 export REMOTE_MODE=remote
 export LOCAL_MODE=local
@@ -53,7 +54,7 @@ function ansible_play(){
 		md5=$TMP_ANSIBLE_PATH"/"`echo $* $i | md5sum | awk '{print $1}'`
 	done
 	touch $md5
-	shell="ansible-playbook "$ANSIBLE_VERBOSE" "$playbook".yml --extra-vars \""$vars" RETURN_LOG="$md5"\" --tags \""$tags"\""
+	shell="ansible-playbook "$ANSIBLE_VERBOSE" "$playbook".yml --extra-vars \""$vars" RETURN_LOG="$md5"\" --tags \""$tags"\" 2>&1"
 	if [ $back ]
 	then
 		shell=$shell" &"
