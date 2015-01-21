@@ -48,7 +48,7 @@ case $CMD in
 		then
 			remote_path=$dest"/"
 		fi
-		eval "ansible_play cluster \"PARAM='"$param"' SOURCE="$source" LOCAL_PATH=$local_path LOCAL_TMP=$LOCAL_TMP REMOTE_PATH=$remote_path REMOTE_TMP=$REMOTE_TMP USER=$USER PROJECT=$PROJECT\" \"upload\""
+		eval "ansible_play cluster \"PARAM='"$param"' SOURCE="$source" LOCAL_PATH=$local_path LOCAL_TMP=$LOCAL_TMP REMOTE_PATH=$remote_path REMOTE_TMP=$REMOTE_TMP USER=$USER PROJECT=$PROJECT\" \""$CMD"\""
 		out_local=$ANSIBLE_OUT
 	;;
 	download)
@@ -83,7 +83,7 @@ case $CMD in
 		then
 			local_path=$dest
 		fi
-		eval "ansible_play cluster \"PARAM='"$param"' SOURCE="$source" LOCAL_PATH=$local_path LOCAL_TMP=$LOCAL_TMP REMOTE_PATH=$remote_path REMOTE_TMP=$REMOTE_TMP USER=$USER PROJECT=$PROJECT\" \"download\""
+		eval "ansible_play cluster \"PARAM='"$param"' SOURCE="$source" LOCAL_PATH=$local_path LOCAL_TMP=$LOCAL_TMP REMOTE_PATH=$remote_path REMOTE_TMP=$REMOTE_TMP USER=$USER PROJECT=$PROJECT\" \""$CMD"\""
 		out_local=$ANSIBLE_OUT
 	;;
 	shell)
