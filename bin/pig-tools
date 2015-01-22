@@ -23,7 +23,7 @@ function get_pig_script_name(){
 
 function combine(){
 	echo "================>combine step<==============";
-	$ROOT_PATH/bin/hadoop-tools --remote fs -get "{COMBINE_LOCAL}" "$REMOTE_TMP/$TMP_COMBINE_PATH"
+	$ROOT_PATH/bin/hadoop-tools --remote fs -get "{COMBINE_REMOTE}" "$REMOTE_TMP/$TMP_COMBINE_PATH"
 	$ROOT_PATH/bin/cluster-tools download "$REMOTE_TMP/$TMP_COMBINE_PATH" "$LOCAL_TMP/"
 	$ROOT_PATH/bin/cluster-tools --remote shell "rm -rf $REMOTE_TMP/$TMP_COMBINE_PATH"
 	$ROOT_PATH/bin/hadoop-tools --local fs -put "$LOCAL_TMP/$TMP_COMBINE_PATH" "{COMBINE_REMOTE}"
