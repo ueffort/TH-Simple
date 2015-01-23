@@ -6,9 +6,9 @@
     - dfs local
   gather_facts: false
   tasks:
-    - name: "hadoop fs dfs {{ SOURCE }} {{ DEST }}"
+    - name: "hadoop dfs {{ COMMAND }} {{ SOURCE }} {{ DEST }}"
       register: result
-      shell: "{{ HADOOP_HOME }}/bin/hadoop dfs {{ SOURCE }} {{ DEST }}"
+      shell: "{{ HADOOP_HOME }}/bin/hadoop dfs {{ COMMAND }} {{ SOURCE }} {{ DEST }}"
       ignore_errors: True
     - include: tasks/std.yml
 
@@ -16,8 +16,26 @@
   tags:
     - dfs remote
   gather_facts: false
+  vars:
+    - remote_type: "{{ REMOTE_TYPE if REMOTE_TYPE in valid_type else 'hadoop' }}"
+    - valid_type: ["aws"]
+    - command: "{{ COMMAND[1:] }}"
   roles:
-    - { role: "dfs", tags: ["{{ COMMAND }} {{ REMOTE_TYPE }}"] }
+    - { role: "dfs-{{ remote_type }}", command: "{{ command }}", when: "{{ REMOTE_TYPE }}" }
+
+- hosts: remote
+  tags:
+    - dfs remote
+  gather_facts: false
+  vars:
+    - check_remote: "{{ False if REMOTE_TYPE else True }}"
+  tasks:
+    - name: "hadoop dfs {{ COMMAND }} {{ SOURCE }} {{ DEST }}"
+      register: result
+      shell: "{{ HADOOP_HOME }}/bin/hadoop dfs {{ COMMAND }} {{ SOURCE }} {{ DEST }}"
+      ignore_errors: True
+      when: check_remote
+    - include: tasks/std.yml
 
 - hosts: local
   tags: 

@@ -1,23 +1,22 @@
 ---
 
+# vars:
+#   skip_errors:  True 则跳过failed
+
 - name: std start
   shell: "touch {{ RETURN_LOG }}_{{ result.rc }}"
   delegate_to: localhost
+  when: result.rc is defined
 
 - name: stdout_lines to file
   shell: "echo '{{ item }}' >> {{ RETURN_LOG }}_{{ result.rc }}"
   with_items: result.stdout_lines
   delegate_to: localhost
-  when: result.stdout_lines
-
-#- name: stderr to file
-#  shell: "echo '{{ result.stdout }}' >> {{ RETURN_LOG }}_{{ result.rc }}"
-#  delegate_to: localhost
-#  when: result.stdout
+  when: result.rc is defined and result.stdout_lines
 
 - name: stderr to file
-  shell: "echo '{{ result.stderr }}' >> {{ RETURN_LOG }}_{{ result.rc }}"
+  shell: "echo error:{{ inventory_hostname }} >> {{ RETURN_LOG }}_{{ result.rc }};echo '{{ result.stderr }}' >> {{ RETURN_LOG }}_{{ result.rc }};"
   delegate_to: localhost
-  when: result.stderr
-  failed_when: result.stderr
+  when: result.rc is defined and result.stderr
+  failed_when: result.rc is defined and skip_errors is not defined
 

@@ -1,64 +1,78 @@
 ---
 # aws s3 
-- name: create touch file
-  tags: 
-    - -touchz aws
+- name: "create touch file"
   shell: "touch {{ REMOTE | basename }}"
-
-- name: touch file to s3
-  tags: 
-    - -touchz aws
-  shell: "aws s3 cp {{ REMOTE | basename }} {{ REMOTE }}"
+  when: command == "touchz"
   ignore_errors: True
 
+- name: touch file to s3
+  register: result
+  shell: "aws s3 cp {{ REMOTE | basename }} {{ REMOTE }}"
+  when: command == "touchz"
+  ignore_errors: True
+
+- include: ../../../tasks/std.yml
+  vars:
+    skip_errors: True
+
 - name: remote touch file
-  tags: 
-    - -touchz aws
   shell: "rm -rf {{ REMOTE | basename }}"
+  when: command == "touchz"
   ignore_errors: True
 
 - name: put file to s3
-  tags: 
-    - -put aws
+  register: result
   shell: "aws s3 cp {{ LOCAL }} {{ REMOTE }}"
+  when: command == "put"
   ignore_errors: True
 
+- include: ../../../tasks/std.yml
+
 - name: remove file from s3
-  tags:
-    - -rm aws
+  register: result
   shell: "aws s3 rm {{ REMOTE }}"
+  when: command == "rm"
   ignore_errors: True
 
+- include: ../../../tasks/std.yml
+
 - name: remove file from s3
-  tags:
-    - -rmr aws
+  register: result
   shell: "aws s3 rm {{ REMOTE }} --recursive"
+  when: command == "rmr"
   ignore_errors: True
+
+- include: ../../../tasks/std.yml
 
 - name: ls file from s3 dir
-  tags:
-    - -ls aws
+  register: result
   shell: "aws s3 ls {{ REMOTE }}"
+  when: command == "ls"
   ignore_errors: True
+
+- include: ../../../tasks/std.yml
 
 - name: test file from s3
-  tags:
-    - -test aws
+  register: result
   shell: "aws s3 cp {{ REMOTE }} {{ REMOTE | basename }}"
+  when: command == "test"
   ignore_errors: True
 
+- include: ../../../tasks/std.yml
+  vars:
+    skip_errors: True
+
 - name: delete test file
-  tags:
-    - -test aws
   shell: "rm {{ REMOTE | basename }}"
+  when: command == "test"
   ignore_errors: True
 
 - name: get file from s3
-  tags:
-    - -get aws
+  register: result
   shell: "aws s3 cp {{ REMOTE }} {{ LOCAL }}"
+  when: command == "get"
   ignore_errors: True
 
-# 执行完都调用std命令集合，用于输出
-- include: tasks/std.yml
+- include: ../../../tasks/std.yml
+
  
