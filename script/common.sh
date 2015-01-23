@@ -26,11 +26,11 @@ cluster_host=$BOTH_MODE
 for p in $*
 do
 	case $p in 
-		--local)
+		--local|--LOCAL)
 			cluster_host=$LOCAL_MODE;
 			shift
 		;;
-		--remote)
+		--remote|--REMOTE)
 			cluster_host=$REMOTE_MODE;
 			shift
 		;;
@@ -80,9 +80,9 @@ function parse_ansible_return(){
 		l=$[$l + 1]
 		c=`ls ${f}_* | head -n 1`
 		cat $c
+		e=${c:$l:3}
 		rm -f $c
 		rm -f $f
-		e=${c:$l:3}
 	else
 		echo "Ansible error: Out File loss! file:"$f
 		rm -rf $f

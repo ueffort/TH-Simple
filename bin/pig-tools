@@ -18,7 +18,14 @@ function usage() {
 if [ $? != 0 ] ; then usage >&2 ; exit 1 ; fi
 
 function get_pig_script_name(){
-	echo `dirname $1`"/"`basename $1 .pig`;
+	name=`basename $1 .pig`
+	full=$2
+	if [ -z $full ]
+	then
+		echo `dirname $1`"/"$name
+	else
+		echo $name
+	fi
 }
 
 function combine(){
@@ -63,7 +70,7 @@ COMBINE_SCRIPT=
 while [ -n "$*" ]
 do
 	case $1 in
-		--combine)
+		--combine|--COMBINE)
 			combine=true
 		shift ;;
 		-*)
@@ -76,6 +83,7 @@ do
     esac
 done
 
+export TMP_COMBINE_PATH=${TMP_COMBINE_PATH}_`get_pig_script_name $SCRIPT`
 if [ -z $SCRIPT ]
 then
 	usage
@@ -115,7 +123,7 @@ then
 	if [ -z $COMBINE_SCRIPT ]
 	then
 		# 自动绑定合并的pig脚本
-		COMBINE_SCRIPT=`get_pig_script_name $SCRIPT`"-combine.pig"
+		COMBINE_SCRIPT=`get_pig_script_name $SCRIPT 1`"-combine.pig"
 	fi
 	eval "combine \""$param"\""
 	parse_ansible_return $ANSIBLE_OUT
