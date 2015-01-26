@@ -85,14 +85,14 @@ function parse_ansible_return(){
 		rm -f $f
 	else
 		echo "Ansible error: Out File loss! file:"$f
-		rm -rf $f
+		rm -rf $f"*"
 		e=1
 	fi
 	return $e
 }
 
 function replace_globals(){
-	param=$1;
+	filter=$1;
 	mode=$2;
 	#不用存储在永久存储中，直接存储在集群的hdfs即可
 	COMBINE_LOCAL=${LOCAL_HADOOP_TMP}"/"${TMP_COMBINE_PATH}_${LOCAL_MODE}
@@ -110,7 +110,7 @@ function replace_globals(){
 		STORAGE_PREFIX=
 		COMBINE_PATH=$COMBINE_LOCAL
 	fi
-	awk_shell="echo '"$param"' | awk 'BEGIN{"
+	awk_shell="echo \""$filter"\" | awk 'BEGIN{"
 	t=0
 	for i in CLUSTER_TYPE PROJECT_PATH STORAGE_PREFIX COMBINE_PATH COMBINE_LOCAL COMBINE_REMOTE
 	do
@@ -125,6 +125,6 @@ function replace_globals(){
 	done
 	awk_shell=${awk_shell}'}{ori=$0;for(i in a){gsub(a[i],b[i],ori);}print ori}'"'"
 	#echo "$awk_shell"
-	param=`eval $awk_shell`
-	echo $param
+	filter=`eval $awk_shell`
+	echo $filter
 }

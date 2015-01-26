@@ -41,13 +41,13 @@ function combine(){
 
 function pig_play(){
 	script=$1
-	param=$2
+	p=$2
 	host=$3
 	back=$4
 	
-	param=$param" -param STORAGE_PREFIX={STORAGE_PREFIX} -param PROJECT_PATH={PROJECT_PATH} -param CLUSTER_TYPE={CLUSTER_TYPE} -param COMBINE_PATH={COMBINE_PATH}"
-	param="PARAM='\'"$param"\'' PROJECT_PATH={PROJECT_PATH}"
-	param=`eval "replace_globals \"$param\" \"$host\""`
+	p=$p" -param STORAGE_PREFIX={STORAGE_PREFIX} -param PROJECT_PATH={PROJECT_PATH} -param CLUSTER_TYPE={CLUSTER_TYPE} -param COMBINE_PATH={COMBINE_PATH}"
+	p="PARAM='"$p"' PROJECT_PATH={PROJECT_PATH}"
+	p=`eval "replace_globals \"$p\" \"$host\""`
 	
 	if [ $host = $REMOTE_MODE ]
 	then
@@ -57,7 +57,7 @@ function pig_play(){
 		pig_home=$REMOTE_PIG_HOME
 	fi
 	
-	eval "ansible_play pig \"$param SCRIPT=$script PIG_HOME=$pig_home\" \"$host\" $back"
+	eval "ansible_play pig \"$p SCRIPT=$script PIG_HOME=$pig_home\" \"$host\" $back"
 }
 
 cluster_host=$CLUSTER_HOST

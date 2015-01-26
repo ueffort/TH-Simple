@@ -97,7 +97,7 @@ case $CMD in
 				;;
 			esac
 		done
-		param="SHELL='\'"$param"\'' PROJECT_PATH={PROJECT_PATH}"
+		param="SHELL='"$param"' PROJECT_PATH={PROJECT_PATH}"
 		cluster_host=$CLUSTER_HOST
 		if [ $cluster_host = $LOCAL_MODE -o $cluster_host = $BOTH_MODE ]
 		then
