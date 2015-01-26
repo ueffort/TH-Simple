@@ -45,7 +45,7 @@ case $CMD in
 				$CMD|$2)
 				;;
 				*)
-					param=$param" "$p;
+					param=$param""$p" ";
 				;;
 			esac
 		done
@@ -57,14 +57,14 @@ esac
 # 通过TAG区分cmd命令及运行的机器，REMOTE_TYPE变量区分远程集群模式（在ansible中，用role区分REMOTE_TYPE）
 if [ $cluster_host = $LOCAL_MODE -o $cluster_host = $BOTH_MODE ]
 then
-	param_local=`eval "replace_globals \"$param\" \"$LOCAL_MODE\""`
-	eval "ansible_play hadoop \"CMD=$CMD COMMAND=$command $param_local HADOOP_HOME=$LOCAL_HADOOP_HOME REMOTE_TYPE=$REMOTE_TYPE\" \"$TAG $LOCAL_MODE\""
+	param_local=`replace_globals "$param" "$LOCAL_MODE"`
+	ansible_play hadoop "CMD=$CMD COMMAND=$command $param_local HADOOP_HOME=$LOCAL_HADOOP_HOME REMOTE_TYPE=$REMOTE_TYPE" "$TAG $LOCAL_MODE"
 	out_local=$ANSIBLE_OUT
 fi
 if [ $cluster_host = $REMOTE_MODE -o $cluster_host = $BOTH_MODE ]
 then
-	param_remote=`eval "replace_globals \"$param\" \"$REMOTE_MODE\""`
-	eval "ansible_play hadoop \"CMD=$CMD COMMAND=$command $param_remote HADOOP_HOME=$REMOTE_HADOOP_HOME REMOTE_TYPE=$REMOTE_TYPE\" \"$TAG $REMOTE_MODE\""
+	param_remote=`replace_globals "$param" "$REMOTE_MODE"`
+	ansible_play hadoop "CMD=$CMD COMMAND=$command $param_remote HADOOP_HOME=$REMOTE_HADOOP_HOME REMOTE_TYPE=$REMOTE_TYPE" "$TAG $REMOTE_MODE"
 	out_remote=$ANSIBLE_OUT
 fi
 

@@ -42,7 +42,7 @@ export CLUSTER_HOST=$cluster_host
 function ansible_play(){
 	cd $ANSIBLE_PATH;
 	playbook=$1
-	vars=$2
+	vars=`echo "$2" | sed 's/"/\\\\"/g'`
 	tags=$3
 	back=$4
 	timestamp=`date +%s`
@@ -72,27 +72,28 @@ function ansible_play(){
 }
 
 function parse_ansible_return(){
-	f=$1
-	s=`ls ${f}_* 2>/dev/null`
+	return_f=$1
+	return_s=`ls ${return_f}_* 2>/dev/null`
 	if [ $? -eq 0 ]
 	then
-		l=${#f}
-		l=$[$l + 1]
-		c=`ls ${f}_* | head -n 1`
-		cat $c
-		e=${c:$l:3}
-		rm -f $c
-		rm -f $f
+		return_l=${#return_f}
+		return_l=$[$return_l + 1]
+		return_c=`ls ${return_f}_* | head -n 1`
+		cat $return_c
+		return_e=${return_c:$return_l:3}
+		rm -f $return_c
+		rm -f $return_f
 	else
-		echo "Ansible error: Out File loss! file:"$f
-		rm -rf $f"*"
-		e=1
+		echo "Ansible error: Out File loss! file:"$return_f
+		rm -rf $return_f"*"
+		return_e=1
 	fi
-	return $e
+	return $return_e
 }
 
+#  包含引号需要加转义符
 function replace_globals(){
-	filter=$1;
+	filter=`echo "$1" | sed 's/"/\\\\"/g'`
 	mode=$2;
 	#不用存储在永久存储中，直接存储在集群的hdfs即可
 	COMBINE_LOCAL=${LOCAL_HADOOP_TMP}"/"${TMP_COMBINE_PATH}_${LOCAL_MODE}
@@ -125,6 +126,6 @@ function replace_globals(){
 	done
 	awk_shell=${awk_shell}'}{ori=$0;for(i in a){gsub(a[i],b[i],ori);}print ori}'"'"
 	#echo "$awk_shell"
-	filter=`eval $awk_shell`
+	filter=`eval "$awk_shell"`
 	echo $filter
 }

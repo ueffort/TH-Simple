@@ -27,7 +27,7 @@ case $CMD in
 				upload)
 				;;
 				-*)
-					param=$param" "$p
+					param=$param""$p" "
 				;;
 				*)
 					b[$i]=$p
@@ -48,7 +48,8 @@ case $CMD in
 		then
 			remote_path=$dest"/"
 		fi
-		eval "ansible_play cluster \"PARAM='"$param"' SOURCE="$source" LOCAL_PATH=$local_path LOCAL_TMP=$LOCAL_TMP REMOTE_PATH=$remote_path REMOTE_TMP=$REMOTE_TMP USER=$USER PROJECT=$PROJECT\" \""$CMD"\""
+		param="PARAM='"$param"' SOURCE=$source LOCAL_PATH=$local_path LOCAL_TMP=$LOCAL_TMP REMOTE_PATH=$remote_path REMOTE_TMP=$REMOTE_TMP USER=$USER PROJECT=$PROJECT"
+		ansible_play cluster "$param" "$CMD"
 		out_local=$ANSIBLE_OUT
 	;;
 	download)
@@ -62,7 +63,7 @@ case $CMD in
 				download)
 				;;
 				-*)
-					param=$param" "$p
+					param=$param""$p" "
 				;;
 				*)
 					b[$i]=$p
@@ -83,7 +84,8 @@ case $CMD in
 		then
 			local_path=$dest
 		fi
-		eval "ansible_play cluster \"PARAM='"$param"' SOURCE="$source" LOCAL_PATH=$local_path LOCAL_TMP=$LOCAL_TMP REMOTE_PATH=$remote_path REMOTE_TMP=$REMOTE_TMP USER=$USER PROJECT=$PROJECT\" \""$CMD"\""
+		param="PARAM='"$param"' SOURCE=$source LOCAL_PATH=$local_path LOCAL_TMP=$LOCAL_TMP REMOTE_PATH=$remote_path REMOTE_TMP=$REMOTE_TMP USER=$USER PROJECT=$PROJECT"
+		ansible_play cluster "$param" "$CMD"
 		out_local=$ANSIBLE_OUT
 	;;
 	shell)
@@ -93,7 +95,7 @@ case $CMD in
 				$CMD)
 				;;
 				*)
-					param=$param" "$p;
+					param=$param""$p" ";
 				;;
 			esac
 		done
@@ -101,14 +103,14 @@ case $CMD in
 		cluster_host=$CLUSTER_HOST
 		if [ $cluster_host = $LOCAL_MODE -o $cluster_host = $BOTH_MODE ]
 		then
-			shell=`eval "replace_globals \"$param\" $LOCAL_MODE"`
-			eval "ansible_play shell \"$shell\" \"$LOCAL_MODE\""
+			shell=`replace_globals "$param" $LOCAL_MODE`
+			ansible_play shell "$shell" "$LOCAL_MODE"
 			out_local=$ANSIBLE_OUT
 		fi
 		if [ $cluster_host = $REMOTE_MODE -o $cluster_host = $BOTH_MODE ]
 		then
-			shell=`eval "replace_globals \"$param\" $REMOTE_MODE"`
-			eval "ansible_play shell \"$shell\" \"$REMOTE_MODE\""
+			shell=`replace_globals "$param" $REMOTE_MODE`
+			ansible_play shell "$shell" "$REMOTE_MODE"
 			out_remote=$ANSIBLE_OUT
 		fi
 	;;

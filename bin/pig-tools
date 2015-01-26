@@ -36,7 +36,7 @@ function combine(){
 	$ROOT_PATH/bin/hadoop-tools --local fs -put "$LOCAL_TMP/$TMP_COMBINE_PATH" "{COMBINE_REMOTE}"
 	$ROOT_PATH/bin/cluster-tools --local shell "rm -rf $LOCAL_TMP/$TMP_COMBINE_PATH"
 	param=$1" -param COMBINE_LOCAL={COMBINE_LOCAL} -param COMBINE_REMOTE={COMBINE_REMOTE}"
-	eval "pig_play "$COMBINE_SCRIPT" \""$param"\" "$LOCAL_MODE
+	pig_play "$COMBINE_SCRIPT" "$param" "$LOCAL_MODE"
 }
 
 function pig_play(){
@@ -45,19 +45,19 @@ function pig_play(){
 	host=$3
 	back=$4
 	
-	p=$p" -param STORAGE_PREFIX={STORAGE_PREFIX} -param PROJECT_PATH={PROJECT_PATH} -param CLUSTER_TYPE={CLUSTER_TYPE} -param COMBINE_PATH={COMBINE_PATH}"
-	p="PARAM='"$p"' PROJECT_PATH={PROJECT_PATH}"
-	p=`eval "replace_globals \"$p\" \"$host\""`
+	p=$p" -param STORAGE_PREFIX=\"'{STORAGE_PREFIX}'\" -param PROJECT_PATH={PROJECT_PATH} -param CLUSTER_TYPE=\"'{CLUSTER_TYPE}'\" -param COMBINE_PATH={COMBINE_PATH}"
+	p="PARAM='"$p"' PROJECT_PATH={PROJECT_PATH} SCRIPT=$script "
+	p=`replace_globals "$p" "$host"`
 	
 	if [ $host = $REMOTE_MODE ]
 	then
 		pig_home=$REMOTE_PIG_HOME
 	elif [ $host = $LOCAL_MODE ]
 	then
-		pig_home=$REMOTE_PIG_HOME
+		pig_home=$LOCAL_PIG_HOME
 	fi
 	
-	eval "ansible_play pig \"$p SCRIPT=$script PIG_HOME=$pig_home\" \"$host\" $back"
+	ansible_play pig "$p PIG_HOME=$pig_home" "$host" $back
 }
 
 cluster_host=$CLUSTER_HOST
@@ -74,7 +74,7 @@ do
 			combine=true
 		shift ;;
 		-*)
-			param=$param" "$1" "$2;
+			param=$param""$1" "$2" ";
 		shift 2;;
 		*)
 			export SCRIPT=$1;
@@ -89,15 +89,14 @@ then
 	usage
 	exit 1
 fi
-
 if [ $cluster_host = $LOCAL_MODE -o $cluster_host = $BOTH_MODE ]
 then
-	eval "pig_play $SCRIPT \""$param"\" $LOCAL_MODE true"
+	pig_play $SCRIPT "$param" $LOCAL_MODE true
 	out_local=$ANSIBLE_OUT
 fi
 if [ $cluster_host = $REMOTE_MODE -o $cluster_host = $BOTH_MODE ]
 then
-	eval "pig_play $SCRIPT \""$param"\" $REMOTE_MODE true"
+	pig_play $SCRIPT "$param" $REMOTE_MODE true
 	out_remote=$ANSIBLE_OUT
 fi
 
@@ -125,7 +124,7 @@ then
 		# 自动绑定合并的pig脚本
 		COMBINE_SCRIPT=`get_pig_script_name $SCRIPT 1`"-combine.pig"
 	fi
-	eval "combine \""$param"\""
+	combine "$param"
 	parse_ansible_return $ANSIBLE_OUT
 	exit $?
 fi
