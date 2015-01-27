@@ -17,11 +17,11 @@
     - dfs remote
   gather_facts: false
   vars:
-    - remote_type: "{{ REMOTE_TYPE if REMOTE_TYPE in valid_type else 'hadoop' }}"
+    - remote_type: "{{ True if REMOTE_TYPE in valid_type else False }}"
     - valid_type: ["aws"]
     - command: "{{ COMMAND[1:] }}"
   roles:
-    - { role: "dfs-{{ remote_type }}", command: "{{ command }}", when: "{{ REMOTE_TYPE }}" }
+    - { role: "dfs-{{ REMOTE_TYPE }}", command: "{{ command }}", when: remote_type }
 
 - hosts: remote
   tags:
