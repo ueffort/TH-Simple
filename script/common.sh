@@ -12,7 +12,7 @@ export PROJECT=`basename $(pwd)`;
 export REMOTE_PATH=$REMOTE_PATH/$USER/$PROJECT;
 export LOCAL_PATH=$CURRENT_PATH;
 export TIMESTAMP=`date +%s`
-export TMP_COMBINE_PATH="/"${USER}"_"${PROJECT}"_"${TIMESTAMP}
+
 export TMP_ANSIBLE_PATH=$ANSIBLE_PATH"/tmp/"`date +%Y-%m-%d`"/"${USER}_${PROJECT}
 mkdir -p $TMP_ANSIBLE_PATH
 chmod -R 777 $ANSIBLE_PATH"/tmp/"
@@ -40,7 +40,6 @@ export CLUSTER_HOST=$cluster_host
 
 
 function ansible_play(){
-	cd $ANSIBLE_PATH;
 	playbook=$1
 	vars=`echo "$2" | sed 's/"/\\\\"/g'`
 	tags=$3
@@ -54,7 +53,7 @@ function ansible_play(){
 		md5=$TMP_ANSIBLE_PATH"/"`echo $* $i | md5sum | awk '{print $1}'`
 	done
 	touch $md5
-	shell="ansible-playbook "$ANSIBLE_VERBOSE" "$playbook".yml --extra-vars \""$vars" RETURN_LOG="$md5"\" --tags \""$tags"\" 2>&1"
+	shell="cd $ANSIBLE_PATH;ansible-playbook "$ANSIBLE_VERBOSE" "$playbook".yml --extra-vars \""$vars" RETURN_LOG="$md5"\" --tags \""$tags"\" 2>&1"
 	if [ $back ]
 	then
 		shell=$shell" &"
@@ -95,31 +94,26 @@ function parse_ansible_return(){
 function replace_globals(){
 	filter=`echo "$1" | sed 's/"/\\\\"/g'`
 	mode=$2;
-	#不用存储在永久存储中，直接存储在集群的hdfs即可
-	COMBINE_LOCAL=${LOCAL_HADOOP_TMP}"/"${TMP_COMBINE_PATH}_${LOCAL_MODE}
-	COMBINE_REMOTE=${REMOTE_HADOOP_TMP}"/"${TMP_COMBINE_PATH}_${REMOTE_MODE}
 	if [ $mode = $REMOTE_MODE ]
 	then
 		CLUSTER_TYPE="-"$REMOTE_TYPE
 		PROJECT_PATH=$REMOTE_PATH
 		STORAGE_PREFIX=$REMOTE_STORAGE_PREFIX
-		COMBINE_PATH=$COMBINE_REMOTE
 	elif [ $mode = $LOCAL_MODE ]
 	then
 		CLUSTER_TYPE=
 		PROJECT_PATH=$LOCAL_PATH
 		STORAGE_PREFIX=
-		COMBINE_PATH=$COMBINE_LOCAL
 	fi
 	awk_shell="echo \""$filter"\" | awk 'BEGIN{"
 	t=0
-	for i in CLUSTER_TYPE PROJECT_PATH STORAGE_PREFIX COMBINE_PATH COMBINE_LOCAL COMBINE_REMOTE
+	for i in CLUSTER_TYPE PROJECT_PATH STORAGE_PREFIX
 	do
 		t=$[$t + 1]
 		awk_shell=${awk_shell}"a[$t]=\"{"$i"}\";"
 	done
 	t=0
-	for i in "$CLUSTER_TYPE" "$PROJECT_PATH" "$STORAGE_PREFIX" "$COMBINE_PATH" "$COMBINE_LOCAL" "$COMBINE_REMOTE"
+	for i in "$CLUSTER_TYPE" "$PROJECT_PATH" "$STORAGE_PREFIX"
 	do
 		t=$[$t + 1]
 		awk_shell=${awk_shell}"b[$t]=\""$i"\";"

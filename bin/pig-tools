@@ -22,21 +22,24 @@ function get_pig_script_name(){
 	full=$2
 	if [ -z $full ]
 	then
-		echo `dirname $1`"/"$name
-	else
 		echo $name
+	else
+		echo `dirname $1`"/"$name
 	fi
 }
 
 function combine(){
 	echo "================>combine step<==============";
-	$ROOT_PATH/bin/hadoop-tools --remote fs -get "{COMBINE_REMOTE}" "$REMOTE_TMP/$TMP_COMBINE_PATH"
+	$ROOT_PATH/bin/hadoop-tools --remote fs -get "$COMBINE_REMOTE" "$REMOTE_TMP/$TMP_COMBINE_PATH"
 	$ROOT_PATH/bin/cluster-tools download "$REMOTE_TMP/$TMP_COMBINE_PATH" "$LOCAL_TMP/"
 	$ROOT_PATH/bin/cluster-tools --remote shell "rm -rf $REMOTE_TMP/$TMP_COMBINE_PATH"
-	$ROOT_PATH/bin/hadoop-tools --local fs -put "$LOCAL_TMP/$TMP_COMBINE_PATH" "{COMBINE_REMOTE}"
+	$ROOT_PATH/bin/hadoop-tools --local fs -put "$LOCAL_TMP/$TMP_COMBINE_PATH" "$COMBINE_REMOTE"
 	$ROOT_PATH/bin/cluster-tools --local shell "rm -rf $LOCAL_TMP/$TMP_COMBINE_PATH"
-	param=$1" -param COMBINE_LOCAL={COMBINE_LOCAL} -param COMBINE_REMOTE={COMBINE_REMOTE}"
+	param=$1" -param COMBINE_LOCAL=$COMBINE_LOCAL -param COMBINE_REMOTE=$COMBINE_REMOTE"
 	pig_play "$COMBINE_SCRIPT" "$param" "$LOCAL_MODE"
+	$ROOT_PATH/bin/hadoop-tools --remote fs -rmr "$COMBINE_REMOTE"
+	$ROOT_PATH/bin/hadoop-tools --local fs -rmr "$COMBINE_REMOTE"
+	$ROOT_PATH/bin/hadoop-tools --local fs -rmr "$COMBINE_LOCAL"
 }
 
 function pig_play(){
@@ -44,18 +47,20 @@ function pig_play(){
 	p=$2
 	host=$3
 	back=$4
-	
-	p=$p" -param STORAGE_PREFIX=\"'{STORAGE_PREFIX}'\" -param PROJECT_PATH={PROJECT_PATH} -param CLUSTER_TYPE=\"'{CLUSTER_TYPE}'\" -param COMBINE_PATH={COMBINE_PATH}"
-	p="PARAM='"$p"' PROJECT_PATH={PROJECT_PATH} SCRIPT=$script "
-	p=`replace_globals "$p" "$host"`
-	
 	if [ $host = $REMOTE_MODE ]
 	then
+		COMBINE_PATH=$COMBINE_REMOTE
 		pig_home=$REMOTE_PIG_HOME
 	elif [ $host = $LOCAL_MODE ]
 	then
+		COMBINE_PATH=$COMBINE_LOCAL
 		pig_home=$LOCAL_PIG_HOME
 	fi
+	
+	p=$p" -param STORAGE_PREFIX=\"'{STORAGE_PREFIX}'\" -param PROJECT_PATH={PROJECT_PATH} -param CLUSTER_TYPE=\"'{CLUSTER_TYPE}'\" -param COMBINE_PATH=$COMBINE_PATH"
+	p="PARAM='"$p"' PROJECT_PATH={PROJECT_PATH} SCRIPT=$script "
+	p=`replace_globals "$p" "$host"`
+	
 	
 	ansible_play pig "$p PIG_HOME=$pig_home" "$host" $back
 }
@@ -74,8 +79,15 @@ do
 			combine=true
 		shift ;;
 		-*)
-			param=$param""$1" "$2" ";
-		shift 2;;
+			param=$param""$1" "
+			if [ ${2:0:1} != "-" ]
+			then
+				param=$param""$2" ";
+				shift 2
+			else
+				shift
+			fi
+		;;
 		*)
 			export SCRIPT=$1;
 			break
@@ -83,7 +95,10 @@ do
     esac
 done
 
-export TMP_COMBINE_PATH=${TMP_COMBINE_PATH}_`get_pig_script_name $SCRIPT`
+export TMP_COMBINE_PATH="/"${USER}"_"${PROJECT}"_"${TIMESTAMP}_`get_pig_script_name $SCRIPT`
+#不用存储在永久存储中，直接存储在集群的hdfs即可
+export COMBINE_LOCAL=${LOCAL_HADOOP_TMP}"/"${TMP_COMBINE_PATH}_${LOCAL_MODE}
+export COMBINE_REMOTE=${REMOTE_HADOOP_TMP}"/"${TMP_COMBINE_PATH}_${REMOTE_MODE}
 if [ -z $SCRIPT ]
 then
 	usage
