@@ -1,5 +1,10 @@
 ---
+
 # aws s3 
+- name: "change dir"
+  shell: "cd {{ PROJECT_PATH }};"
+  ignore_errors: True
+
 - name: "create touch file"
   shell: "touch {{ REMOTE | basename }}"
   when: command == "touchz"

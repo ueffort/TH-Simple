@@ -1,0 +1,5 @@
+---
+
+pig_home: /home/mapred2/pig
+hadoop_home: /home/mapred2/hadoop
+tmp_path: 

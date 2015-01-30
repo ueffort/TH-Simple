@@ -50,11 +50,9 @@ function pig_play(){
 	if [ $host = $REMOTE_MODE ]
 	then
 		COMBINE_PATH=$COMBINE_REMOTE
-		pig_home=$REMOTE_PIG_HOME
 	elif [ $host = $LOCAL_MODE ]
 	then
 		COMBINE_PATH=$COMBINE_LOCAL
-		pig_home=$LOCAL_PIG_HOME
 	fi
 	
 	p=$p" -param STORAGE_PREFIX=\"'{STORAGE_PREFIX}'\" -param PROJECT_PATH={PROJECT_PATH} -param CLUSTER_TYPE=\"'{CLUSTER_TYPE}'\" -param COMBINE_PATH=$COMBINE_PATH"
@@ -62,7 +60,7 @@ function pig_play(){
 	p=`replace_globals "$p" "$host"`
 	
 	
-	ansible_play pig "$p PIG_HOME=$pig_home" "$host" $back
+	ansible_play pig "$p" "$host" $back
 }
 
 cluster_host=$CLUSTER_HOST

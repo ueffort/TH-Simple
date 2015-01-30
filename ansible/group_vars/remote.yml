@@ -1,0 +1,5 @@
+---
+
+pig_home: /home/hadoop
+hadoop_home: /home/hadoop
+tmp_path: 

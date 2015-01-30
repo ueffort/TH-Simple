@@ -8,7 +8,7 @@
   tasks:
     - name: "hadoop dfs {{ COMMAND }} {{ SOURCE }} {{ DEST }}"
       register: result
-      shell: "{{ HADOOP_HOME }}/bin/hadoop dfs {{ COMMAND }} {{ SOURCE }} {{ DEST }}"
+      shell: "cd {{ PROJECT_PATH }};{{ hadoop_home }}/bin/hadoop dfs {{ COMMAND }} {{ SOURCE }} {{ DEST }}"
       ignore_errors: True
     - include: tasks/std.yml
 
@@ -32,7 +32,7 @@
   tasks:
     - name: "hadoop dfs {{ COMMAND }} {{ SOURCE }} {{ DEST }}"
       register: result
-      shell: "{{ HADOOP_HOME }}/bin/hadoop dfs {{ COMMAND }} {{ SOURCE }} {{ DEST }}"
+      shell: "cd {{ PROJECT_PATH }};{{ hadoop_home }}/bin/hadoop dfs {{ COMMAND }} {{ SOURCE }} {{ DEST }}"
       ignore_errors: True
       when: check_remote
     - include: tasks/std.yml
@@ -44,7 +44,7 @@
   tasks:
     - name: "hadoop {{ CMD }} {{ COMMAND }} {{ PARAM }}"
       register: result
-      shell: "{{ HADOOP_HOME }}/bin/hadoop {{ CMD }} {{ COMMAND }} {{ PARAM }}"
+      shell: "cd {{ PROJECT_PATH }};{{ hadoop_home }}/bin/hadoop {{ CMD }} {{ COMMAND }} {{ PARAM }}"
       ignore_errors: True
     - include: tasks/std.yml
 
@@ -55,6 +55,6 @@
   tasks:
     - name: "hadoop {{ CMD }} {{ COMMAND }} {{ PARAM }}"
       register: result
-      shell: "{{ HADOOP_HOME }}/bin/hadoop {{ CMD }} {{ COMMAND }} {{ PARAM }}"
+      shell: "cd {{ PROJECT_PATH }};{{ hadoop_home }}/bin/hadoop {{ CMD }} {{ COMMAND }} {{ PARAM }}"
       ignore_errors: True
     - include: tasks/std.yml

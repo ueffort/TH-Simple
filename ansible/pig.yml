@@ -8,7 +8,7 @@
   tasks:
     - name: "pig {{ PARAM }} {{ SCRIPT }}"
       register: result
-      shell: "cd {{ PROJECT_PATH }};{{ PIG_HOME }}/bin/pig {{ PARAM }} {{ SCRIPT }}"
+      shell: "cd {{ PROJECT_PATH }};{{ pig_home }}/bin/pig {{ PARAM }} {{ SCRIPT }}"
       ignore_errors: True
     - include: tasks/std.yml
 
@@ -19,6 +19,6 @@
   tasks:
     - name: "pig {{ PARAM }} {{ SCRIPT }}"
       register: result
-      shell: "cd {{ PROJECT_PATH }};{{ PIG_HOME }}/bin/pig {{ PARAM }} {{ SCRIPT }}"
+      shell: "cd {{ PROJECT_PATH }};{{ pig_home }}/bin/pig {{ PARAM }} {{ SCRIPT }}"
       ignore_errors: True
     - include: tasks/std.yml
