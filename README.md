@@ -1,17 +1,24 @@
 # TH-Simple
-Two clusters of Hadoop: 简化在2个Hadoop上的统一操作
-简化2个集群上的统一操作，提供以下工具方便操作
+Two clusters of Hadoop
+> 简化2个集群上的统一操作，提供以下工具方便操作
 
-全局替换变量：这些参数主要用于替换pig脚本，用来兼容不同的平台
-	STORAGE_PREFIX:HADOOP脚本执行后的存储路径，例如：亚马逊的s3:/
-	PROJECT_PATH:项目目录，本地就是当前目录，集群就是通过upload上传的目录
-	CLUSTER_TYPE:区分集群的类型，用在pig参数中，可用于不同集群加载不同的jar包，例如：-aws
-	COMBINE_PATH:配合pig-tools中的combine参数，如果脚本需要combine则会设置该参数，例如：/tmp_{PROJECT_NAME}_{SCRIPT_NAME}/
-				使用该参数，无需添加STORAGE_PREFIX
-	
-	(COMBINE_REMOTE|COMBINE_LOCAL):该参数会提交到combine脚本中，用作2份数据的存放目录
+##全局替换变量
+> 这些参数主要用于替换命令行中参数，用来兼容不同的平台
+
+* STORAGE_PREFIX:HADOOP脚本执行后的存储路径，例如：亚马逊的s3:/
+* PROJECT_PATH:项目目录，本地就是当前目录，集群就是通过upload上传的目录
+* CLUSTER_TYPE:区分集群的类型，用在pig参数中，可用于不同集群加载不同的jar包，例如：-aws
+
+> 会自动添加到pig的命令行参数中
+
+### 针对`pig-tools`:
+> 会自动添加到pig的命令行参数中，在脚本中直接调用即可
+
++ COMBINE_PATH:配合pig-tools中的combine参数，如果脚本需要combine则会设置该参数，例如：/tmp_{PROJECT_NAME}_{SCRIPT_NAME}/
++ (COMBINE_REMOTE|COMBINE_LOCAL):用作2份数据的存放目录,在combine脚本中调用
 				
-注：pig脚本最后的store路径一定要包含STORAGE_PREFIX和COMBINE_PATH参数中的一个，保证数据在脚本控制范围内
+###注：
++ pig脚本最后的store路径一定要包含STORAGE_PREFIX和COMBINE_PATH参数中的一个，保证数据在脚本控制范围内
 
 通过设定export ANSIBLE_VERBOSE=(-v,-vv,-vvv,-vvvv)即可打开详细信息用于调试，但对于脚本内可能会产生获取输出的错误
 
