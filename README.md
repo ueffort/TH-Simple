@@ -11,7 +11,11 @@ Two clusters of Hadoop: 简化在2个Hadoop上的统一操作
 	
 	(COMBINE_REMOTE|COMBINE_LOCAL):该参数会提交到combine脚本中，用作2份数据的存放目录
 				
-注：pig脚本最后的store路径一定要包含STORAGE_PREFIX和COMBINE_PATH参数中的一个，保证数据在脚本控制范围内
+注：
+1.pig脚本最后的store路径一定要包含STORAGE_PREFIX和COMBINE_PATH参数中的一个，保证数据在脚本控制范围内
+2.脚本内不要重写HOME变量，会替换系统变量无法获取到正确的当前用户HOME
+3.参数中包含{asdf,asdf}格式的需要用引号包含下，避免被shell命令行预先转义
+4.hadoop-tools中的dfs不支持{asdf,asdf}这种格式
 
 通过设定export ANSIBLE_VERBOSE=(-v,-vv,-vvv,-vvvv)即可打开详细信息用于调试，但对于脚本内可能会产生获取输出的错误
 
@@ -50,4 +54,3 @@ Two clusters of Hadoop: 简化在2个Hadoop上的统一操作
 
 待开发：
 1.支持2集群之间文件的转移
-2.简化hadoop和pig用shell控制执行目录，可以将该变量写于ansible的全局变量，方便调用，简化shell的处理逻辑
