@@ -59,7 +59,7 @@ function pig_play(){
 	p="PARAM='"$p"' PROJECT_PATH={PROJECT_PATH} SCRIPT=$script "
 	p=`replace_globals "$p" "$host"`
 	
-	
+	echo ansible_play pig "$p" "$host" $back
 	ansible_play pig "$p" "$host" $back
 }
 
