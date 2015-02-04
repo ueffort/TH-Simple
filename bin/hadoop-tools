@@ -35,7 +35,7 @@ case $CMD in
 				exit 1
 		esac
 		TAG=$CMD
-		param="LOCAL=$local_path REMOTE=$remote_path SOURCE=$3 DEST=$4 PROJECT_PATH={PROJECCT_PATH}"
+		param="LOCAL=$local_path REMOTE=$remote_path SOURCE=$3 DEST=$4 PROJECT_PATH={PROJECT_PATH}"
 		command=$2
 	;;
 	*)
@@ -51,7 +51,7 @@ case $CMD in
 		done
 		TAG=base
 		command=$2
-		param="PARAM='"$param"' PROJECT_PATH={PROJECCT_PATH}"
+		param="PARAM='"$param"' PROJECT_PATH={PROJECT_PATH}"
 	;;
 esac
 # 通过TAG区分cmd命令及运行的机器，REMOTE_TYPE变量区分远程集群模式（在ansible中，用role区分REMOTE_TYPE）

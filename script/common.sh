@@ -12,10 +12,15 @@ export PROJECT=`basename $(pwd)`;
 export REMOTE_PATH=$REMOTE_PATH/$USER/$PROJECT;
 export LOCAL_PATH=$CURRENT_PATH;
 export TIMESTAMP=`date +%s`
-
-export TMP_ANSIBLE_PATH=$ANSIBLE_PATH"/tmp/"`date +%Y-%m-%d`"/"${USER}_${PROJECT}
+daily_tmp_path=$ANSIBLE_PATH"/tmp/"`date +%Y-%m-%d`
+if [ ! -e $daily_tmp_path ]
+then
+	mkdir -f $daily_tmp_path
+	chmod 777 $daily_tmp_path
+fi
+export TMP_ANSIBLE_PATH=$daily_tmp_path"/"${USER}_${PROJECT}
 mkdir -p $TMP_ANSIBLE_PATH
-chmod -R 777 $ANSIBLE_PATH"/tmp/"
+chmod -R 777 $TMP_ANSIBLE_PATH
 
 export REMOTE_MODE=remote
 export LOCAL_MODE=local
@@ -53,18 +58,16 @@ function ansible_play(){
 		md5=$TMP_ANSIBLE_PATH"/"`echo $* $i | md5sum | awk '{print $1}'`
 	done
 	touch $md5
-	shell="cd $ANSIBLE_PATH;ansible-playbook "$ANSIBLE_VERBOSE" "$playbook".yml --extra-vars \""$vars" RETURN_LOG="$md5"\" --tags \""$tags"\" 2>&1"
-	if [ $back ]
+	cd $ANSIBLE_PATH
+	wait
+	if [ ! -z $ANSIBLE_VERBOSE ]
 	then
-		shell=$shell" &"
+		echo ansible-playbook "$ANSIBLE_VERBOSE" "$playbook".yml --extra-vars "$vars RETURN_LOG=$md5" --tags "$tags"
 	fi
-	if [ -z $ANSIBLE_VERBOSE ]
+	ansible-playbook $ANSIBLE_VERBOSE $playbook.yml --extra-vars "$vars RETURN_LOG=$md5" --tags "$tags" 1>/dev/null 2>&1 &
+	if [ -z $back ]
 	then
-		#echo out$shell
-		out=`eval $shell`
-	else
-		echo $shell
-		eval $shell
+		wait
 	fi
 	cd $CURRENT_PATH;
 	ANSIBLE_OUT=$md5
