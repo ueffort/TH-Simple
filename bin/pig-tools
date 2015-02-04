@@ -106,11 +106,19 @@ if [ $cluster_host = $LOCAL_MODE -o $cluster_host = $BOTH_MODE ]
 then
 	pig_play $SCRIPT "$param" $LOCAL_MODE true
 	out_local=$ANSIBLE_OUT
+	if [ ! -z $ANSIBLE_VERBOSE ]
+	then
+		echo "local:=>>>>>>>>>>>>>>>>>>>>>>>>>$out_local"
+	fi
 fi
 if [ $cluster_host = $REMOTE_MODE -o $cluster_host = $BOTH_MODE ]
 then
 	pig_play $SCRIPT "$param" $REMOTE_MODE true
 	out_remote=$ANSIBLE_OUT
+	if [ ! -z $ANSIBLE_VERBOSE ]
+	then
+		echo "remote:=>>>>>>>>>>>>>>>>>>>>>>>>$out_remote"
+	fi
 fi
 
 wait
@@ -125,7 +133,7 @@ do
 	e=$[$e + $?]
 done
 
-if [ $e -gt 1 ]
+if [ $e -gt 0 ]
 then
 	exit $e
 fi
