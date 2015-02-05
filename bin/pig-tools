@@ -29,11 +29,77 @@ function get_pig_script_name(){
 }
 
 function combine(){
-	echo "================>combine step<==============";
-	$ROOT_PATH/bin/hadoop-tools --remote fs -get "$COMBINE_REMOTE" "$REMOTE_TMP/$TMP_COMBINE_PATH"
-	$ROOT_PATH/bin/cluster-tools download "$REMOTE_TMP/$TMP_COMBINE_PATH" "$LOCAL_TMP/"
+	echo "================>combine step<=============="
+	re=0
+	echo "get remote "
+	while true
+	do
+		$ROOT_PATH/bin/hadoop-tools --remote fs -get "$COMBINE_REMOTE" "$REMOTE_TMP/$TMP_COMBINE_PATH"
+		if [ $? -ne 0 ]
+		then
+			if [ $re -eq 0]
+			then
+				re=1
+				continue
+			else
+				break
+			fi
+		else
+			re=0
+		fi
+	done
+	if [ $re -ne 0 ]
+	then
+		echo "get remote fail"
+		return $re
+	fi
+	
+	echo "download remote "
+	while true
+	do
+		$ROOT_PATH/bin/cluster-tools download "$REMOTE_TMP/$TMP_COMBINE_PATH" "$LOCAL_TMP/"
+		if [ $? -ne 0 ]
+		then
+			if [ $re -eq 0]
+			then
+				re=1
+				continue
+			else
+				break
+			fi
+		else
+			re=0
+		fi
+	done
+	if [ $re -ne 0 ]
+	then
+		echo "download remote fail"
+		return $re
+	fi
+	echo "put local "
+	while true
+	do
+		$ROOT_PATH/bin/hadoop-tools --local fs -put "$LOCAL_TMP/$TMP_COMBINE_PATH" "$COMBINE_REMOTE"
+		if [ $? -ne 0 ]
+		then
+			if [ $re -eq 0]
+			then
+				re=1
+				continue
+			else
+				break
+			fi
+		else
+			re=0
+		fi
+	done
+	if [ $re -ne 0 ]
+	then
+		echo "put local fail"
+		return $re
+	fi
+	
 	$ROOT_PATH/bin/cluster-tools --remote shell "rm -rf $REMOTE_TMP/$TMP_COMBINE_PATH"
-	$ROOT_PATH/bin/hadoop-tools --local fs -put "$LOCAL_TMP/$TMP_COMBINE_PATH" "$COMBINE_REMOTE"
 	$ROOT_PATH/bin/cluster-tools --local shell "rm -rf $LOCAL_TMP/$TMP_COMBINE_PATH"
 	param=$1" -param COMBINE_LOCAL=$COMBINE_LOCAL -param COMBINE_REMOTE=$COMBINE_REMOTE"
 	pig_play "$COMBINE_SCRIPT" "$param" "$LOCAL_MODE"
@@ -146,6 +212,11 @@ then
 		COMBINE_SCRIPT=`get_pig_script_name $SCRIPT 1`"-combine.pig"
 	fi
 	combine "$param"
+	re=$?
+	if [ $re -ne 0 ]
+	then
+		exit $re
+	fi
 	parse_ansible_return $ANSIBLE_OUT
 	exit $?
 fi
