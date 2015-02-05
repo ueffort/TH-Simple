@@ -37,7 +37,7 @@ function combine(){
 		$ROOT_PATH/bin/hadoop-tools --remote fs -get "$COMBINE_REMOTE" "$REMOTE_TMP/$TMP_COMBINE_PATH"
 		if [ $? -ne 0 ]
 		then
-			if [ $re -eq 0]
+			if [ $re -eq 0 ]
 			then
 				re=1
 				continue
@@ -60,7 +60,7 @@ function combine(){
 		$ROOT_PATH/bin/cluster-tools download "$REMOTE_TMP/$TMP_COMBINE_PATH" "$LOCAL_TMP/"
 		if [ $? -ne 0 ]
 		then
-			if [ $re -eq 0]
+			if [ $re -eq 0 ]
 			then
 				re=1
 				continue
@@ -82,7 +82,7 @@ function combine(){
 		$ROOT_PATH/bin/hadoop-tools --local fs -put "$LOCAL_TMP/$TMP_COMBINE_PATH" "$COMBINE_REMOTE"
 		if [ $? -ne 0 ]
 		then
-			if [ $re -eq 0]
+			if [ $re -eq 0 ]
 			then
 				re=1
 				continue
