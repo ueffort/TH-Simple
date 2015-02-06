@@ -23,15 +23,18 @@ Two clusters of Hadoop
 3.参数中包含{asdf,asdf}格式的需要用引号包含下，避免被shell命令行预先转义
 4.hadoop-tools中的dfs不支持{asdf,asdf}这种格式
 
-通过设定export ANSIBLE_VERBOSE=(-v,-vv,-vvv,-vvvv)即可打开详细信息用于调试，但对于脚本内可能会产生获取输出的错误
+	通过设定export ANSIBLE_VERBOSE=(-v,-vv,-vvv,-vvvv)即可打开详细信息用于调试
+	但对于脚本内可能会产生获取输出的错误
 
 全局命令参数：
-	--local:本地执行
-	--remote:集群执行
-	必须跟在一下3个工具的第一个参数
-	对于默认的both模式，会将本机及集群的输出一同输出，并且会将执行返回值相加
++ --local:本地执行
++ --remote:集群执行
 
-将项目目录/bin加入到环境变量PATH中
+> 必须跟在一下3个工具的第一个参数
+
+> 对于默认的both模式，会将本机及集群的输出一同输出，并且会将执行返回值相加
+
+> 将项目目录/bin加入到环境变量PATH中
 	
 1.cluster-tools:
 	upload:将当前目录内的内容上传至集群中，（本地 远程） 支持tar命令参数，--exclude=data/ --exclude=logs/ --exclude=tmp/ 
