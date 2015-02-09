@@ -36,30 +36,30 @@ Two clusters of Hadoop
 
 > 将项目目录/bin加入到环境变量PATH中
 	
-1.cluster-tools:
-	upload:将当前目录内的内容上传至集群中，（本地 远程） 支持tar命令参数，--exclude=data/ --exclude=logs/ --exclude=tmp/ 
-	
-	download:将集群中项目中的文件下载到当前目录下，（本地 远程）支持tar命令参数，--exclude=data/ --exclude=logs/ --exclude=tmp/ 
-	
-	shell:分别在2个集群上执行命令，参数是完整的命令行
+##cluster-tools:
++ upload:将当前目录内的内容上传至集群中，（本地 远程） 支持tar命令参数，--exclude=data/ --exclude=logs/ --exclude=tmp/ 
++ download:将集群中项目中的文件下载到当前目录下，（本地 远程）支持tar命令参数，--exclude=data/ --exclude=logs/ --exclude=tmp/ 
++ shell:分别在2个集群上执行命令，参数是完整的命令行
 
-2.pig-tools:替代pig执行命令
-	--combine:如果设定，自动将{script}-combine.pig脚本作为执行完后的合并脚本，用于对local和remote分别执行script后的数据合并脚本，如果type为both则会执行，否则不执行
-		合并逻辑：执行script后，将存放在CUMBINE_PATH内的数据下载到本地并且存放到本地集群，将2个数据通过combine脚本进行合并，并且最终存放在本地集群
-		有一个集群执行错误，则不会发起合并操作
-	其余参数不变
-	script:执行的脚本
+##pig-tools:替代pig执行命令
+###--combine
 
-3.hadoop-tools:代替hadoop执行命令，将fs的命令单独出来
-	dfs：因为云上的存储不是存放在当前集群，都是第三方服务形式，所以将dfs命令独立出来，提供有限的操作命令符
-		-ls:一个参数，列出目录文件
-		-rmr|-rm:一个参数，删除文件夹或文件
-		-touchz：1个参数，创建一个空文件
-		-put:2个参数，创建一个文件
-		-get：2个参数，下载文件到本地
-		-test:1个参数，判断文件是否存在
-	如果想直接访问集群自身的文件系统，则可以使用命令fs
+> 自动将{script}-combine.pig脚本作为执行完后的合并脚本，用于对local和remote分别执行script后的数据合并脚本，如果type为both则会执行，否则不执行合并逻辑：执行script后，将存放在CUMBINE_PATH内的数据下载到本地并且存放到本地集群，将2个数据通过combine脚本进行合并，并且最终存放在本地集群.有一个集群执行错误，则不会发起合并操作
+
+其余参数不变
+script:执行的脚本
+
+##hadoop-tools:代替hadoop执行命令
++ dfs：因为云上的存储不是存放在当前集群，都是第三方服务形式，所以将dfs命令独立出来，提供有限的操作命令符
+++ -ls:一个参数，列出目录文件
+++ -rmr|-rm:一个参数，删除文件夹或文件
+++ -touchz：1个参数，创建一个空文件
+++ -put:2个参数，创建一个文件
+++ -get：2个参数，下载文件到本地
+++ -test:1个参数，判断文件是否存在
+
+> 如果想直接访问集群自身的文件系统，则可以使用命令fs
 
 
-待开发：
+#待开发：
 1.支持2集群之间文件的转移
