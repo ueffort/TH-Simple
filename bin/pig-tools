@@ -46,6 +46,7 @@ function combine(){
 			fi
 		else
 			re=0
+			break
 		fi
 	done
 	if [ $re -ne 0 ]
@@ -69,6 +70,7 @@ function combine(){
 			fi
 		else
 			re=0
+			break
 		fi
 	done
 	if [ $re -ne 0 ]
@@ -91,6 +93,7 @@ function combine(){
 			fi
 		else
 			re=0
+			break
 		fi
 	done
 	if [ $re -ne 0 ]
