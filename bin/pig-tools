@@ -54,7 +54,7 @@ function combine(){
 		echo "get remote fail"
 		return $re
 	fi
-	
+
 	echo "download remote "
 	while true
 	do
@@ -101,14 +101,18 @@ function combine(){
 		echo "put local fail"
 		return $re
 	fi
-	
-	$ROOT_PATH/bin/cluster-tools --remote shell "rm -rf $REMOTE_TMP/$TMP_COMBINE_PATH"
-	$ROOT_PATH/bin/cluster-tools --local shell "rm -rf $LOCAL_TMP/$TMP_COMBINE_PATH"
+
 	param=$1" -param COMBINE_LOCAL=$COMBINE_LOCAL -param COMBINE_REMOTE=$COMBINE_REMOTE"
 	pig_play "$COMBINE_SCRIPT" "$param" "$LOCAL_MODE"
-	$ROOT_PATH/bin/hadoop-tools --remote fs -rmr "$COMBINE_REMOTE"
-	$ROOT_PATH/bin/hadoop-tools --local fs -rmr "$COMBINE_REMOTE"
-	$ROOT_PATH/bin/hadoop-tools --local fs -rmr "$COMBINE_LOCAL"
+}
+
+function clean_combine(){
+	$ROOT_PATH/bin/cluster-tools --remote shell "rm -rf $REMOTE_TMP/$TMP_COMBINE_PATH" &
+	$ROOT_PATH/bin/cluster-tools --local shell "rm -rf $LOCAL_TMP/$TMP_COMBINE_PATH" &
+	$ROOT_PATH/bin/hadoop-tools --remote fs -rmr "$COMBINE_REMOTE" &
+	$ROOT_PATH/bin/hadoop-tools --local fs -rmr "$COMBINE_REMOTE" &
+	$ROOT_PATH/bin/hadoop-tools --local fs -rmr "$COMBINE_LOCAL" &
+	wait
 }
 
 function pig_play(){
@@ -123,11 +127,11 @@ function pig_play(){
 	then
 		COMBINE_PATH=$COMBINE_LOCAL
 	fi
-	
+
 	p=$p" -param STORAGE_PREFIX=\"'{STORAGE_PREFIX}'\" -param PROJECT_PATH={PROJECT_PATH} -param CLUSTER_TYPE=\"'{CLUSTER_TYPE}'\" -param COMBINE_PATH=$COMBINE_PATH"
 	p="PARAM='"$p"' PROJECT_PATH={PROJECT_PATH} SCRIPT=$script "
 	p=`replace_globals "$p" "$host"`
-	
+
 	echo ansible_play pig "$p" "$host" $back
 	ansible_play pig "$p" "$host" $back
 }
@@ -216,6 +220,7 @@ then
 	fi
 	combine "$param"
 	re=$?
+	clean_combine
 	if [ $re -ne 0 ]
 	then
 		exit $re
@@ -224,4 +229,3 @@ then
 	exit $?
 fi
 exit
-
