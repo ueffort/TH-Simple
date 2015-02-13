@@ -29,7 +29,7 @@ export ANSIBLE_OUT=
 cluster_host=$BOTH_MODE
 for p in $*
 do
-	case $p in 
+	case $p in
 		--local|--LOCAL)
 			cluster_host=$LOCAL_MODE;
 			shift
@@ -58,7 +58,8 @@ function ansible_play(){
 	done
 	touch $md5
 	cd $ANSIBLE_PATH
-	wait
+	# 切换当前目录不及时会错，不能用wait
+	sleep 1
 	if [ -z $ANSIBLE_VERBOSE ]
 	then
 		ansible-playbook $ANSIBLE_VERBOSE $playbook.yml --extra-vars "$vars RETURN_LOG=$md5" --tags "$tags" 1>/dev/null 2>&1 &
@@ -68,7 +69,8 @@ function ansible_play(){
 	fi
 	if [ -z $back ]
 	then
-		wait
+		pid=$(jobs -l|grep $md5|awk '{print $2}')
+		wait $pid
 	fi
 	cd $CURRENT_PATH;
 	export ANSIBLE_OUT=$md5
