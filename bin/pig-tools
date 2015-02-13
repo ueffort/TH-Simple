@@ -211,7 +211,7 @@ then
 	exit $e
 fi
 
-if [ ! -z "$combine" -a $cluster_host != $LOCAL_MODE ]
+if [ ! -z "$combine" -a $cluster_host != $LOCAL_MODE -a $cluster_host != $REMOTE_MODE ]
 then
 	if [ -z $COMBINE_SCRIPT ]
 	then
