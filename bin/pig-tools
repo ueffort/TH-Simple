@@ -143,6 +143,7 @@ param=
 export SCRIPT=
 COMBINE_SCRIPT=
 
+md5=`echo $* | md5sum | awk '{print $1}'`
 while [ -n "$*" ]
 do
 	case $1 in
@@ -165,8 +166,7 @@ do
 		shift ;;
     esac
 done
-
-export TMP_COMBINE_PATH="/"${USER}"_"${PROJECT}"_"${TIMESTAMP}_`get_pig_script_name $SCRIPT`
+export TMP_COMBINE_PATH="/"${USER}"_"${PROJECT}"_"${TIMESTAMP}"_"${md5}"_"`get_pig_script_name $SCRIPT`
 #不用存储在永久存储中，直接存储在集群的hdfs即可
 export COMBINE_LOCAL=${LOCAL_HADOOP_TMP}"/"${TMP_COMBINE_PATH}_${LOCAL_MODE}
 export COMBINE_REMOTE=${REMOTE_HADOOP_TMP}"/"${TMP_COMBINE_PATH}_${REMOTE_MODE}
