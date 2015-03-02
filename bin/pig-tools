@@ -168,8 +168,8 @@ do
 done
 export TMP_COMBINE_PATH="/"${USER}"_"${PROJECT}"_"${TIMESTAMP}"_"${md5}"_"`get_pig_script_name $SCRIPT`
 #不用存储在永久存储中，直接存储在集群的hdfs即可
-export COMBINE_LOCAL=${LOCAL_HADOOP_TMP}"/"${TMP_COMBINE_PATH}_${LOCAL_MODE}
-export COMBINE_REMOTE=${REMOTE_HADOOP_TMP}"/"${TMP_COMBINE_PATH}_${REMOTE_MODE}
+export COMBINE_LOCAL=${LOCAL_HADOOP_TMP}"/"${TMP_COMBINE_PATH}"_"${LOCAL_MODE}
+export COMBINE_REMOTE=${REMOTE_HADOOP_TMP}"/"${TMP_COMBINE_PATH}"_"${REMOTE_MODE}
 if [ -z $SCRIPT ]
 then
 	usage
