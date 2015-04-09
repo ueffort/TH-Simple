@@ -6,7 +6,7 @@ Two clusters of Hadoop
 > 这些参数主要用于替换命令行中参数，用来兼容不同的平台
 > 通过{xxx}进行命令行参数的替换
 
-* STORAGE_PREFIX:HADOOP脚本执行后的存储路径，例如：亚马逊的s3:/
+* STORAGE_PREFIX:HADOOP脚本执行后的存储路径，例如：亚马逊的s3://BUCKET
 * PROJECT_PATH:项目目录，本地就是当前目录，集群就是通过upload上传的目录
 * CLUSTER_TYPE:区分集群的类型，用在pig参数中，可用于不同集群加载不同的jar包，例如：-aws
 
@@ -19,10 +19,10 @@ Two clusters of Hadoop
 + (COMBINE_REMOTE|COMBINE_LOCAL):用作2份数据的存放目录,在combine脚本中调用
 
 #### 注：
-1.pig脚本最后的store路径一定要包含STORAGE_PREFIX和COMBINE_PATH参数中的一个，保证数据在脚本控制范围内
-2.脚本内不要重写HOME变量，会替换系统变量无法获取到正确的当前用户HOME
-3.参数中包含{asdf,asdf}格式的需要用引号包含下，避免被shell命令行预先转义
-4.hadoop-tools中的dfs不支持{asdf,asdf}这种格式
+1. pig脚本最后的store路径一定要包含STORAGE_PREFIX和COMBINE_PATH参数中的一个，保证数据在脚本控制范围内
+2. 脚本内不要重写HOME变量，会替换系统变量无法获取到正确的当前用户HOME
+3. 参数中包含{asdf,asdf}格式的需要用引号包含下，避免被shell命令行预先转义
+4. hadoop-tools中的dfs不支持{asdf,asdf}这种格式
 
 	通过设定export ANSIBLE_VERBOSE=(-v,-vv,-vvv,-vvvv)即可打开详细信息用于调试
 	但对于脚本内可能会产生获取输出的错误
@@ -59,7 +59,7 @@ script:执行的脚本
 	* -get：2个参数，下载文件到本地
 	* -test:1个参数，判断文件是否存在
 
-> 如果想直接访问集群自身的文件系统，则可以使用命令fs
+> 如果想直接访问集群自身的文件系统，则可以使用命令`fs`
 
 
 #待开发：
