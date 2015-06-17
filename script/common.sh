@@ -19,7 +19,7 @@ chmod -f 777 $daily_tmp_path
 
 export TMP_ANSIBLE_PATH=$daily_tmp_path"/"${USER}_${PROJECT}
 mkdir -p $TMP_ANSIBLE_PATH
-chmod -R 777 $TMP_ANSIBLE_PATH
+chmod -f 777 $TMP_ANSIBLE_PATH
 
 export REMOTE_MODE=remote
 export LOCAL_MODE=local
