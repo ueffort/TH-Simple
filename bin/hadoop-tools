@@ -8,15 +8,185 @@ cd $CURRENT_PATH;
 #开始
 function usage() {
 	echo "--verbose usage: <exec> --param"
-	echo "  type: fs (other)"
+	echo "  type: fs (dfs, thfs)"
 }
-if [ $? != 0 ] ; then usage >&2 ; exit 1 ; fi
+if [ $? != 0 -o $# = 0 ] ; then usage >&2 ; exit 1 ; fi
 
 cluster_host=$CLUSTER_HOST
 
 CMD=$1;
 param=
 case $CMD in
+	thfs)
+		TMP_PATH="/"${USER}"_"${PROJECT}"_"${TIMESTAMP}"_"${md5}"_"`basename $3`
+		case $2 in 
+			-get)
+				remote_path=$3;
+				if [ "$4" != "" ]
+				then
+					local_path=$4;
+				else
+					local_path=$remote_path;
+				fi
+				re=0
+				echo "get remote "
+				while true
+				do
+					$ROOT_PATH/bin/hadoop-tools --remote fs -get "$remote_path" "$REMOTE_TMP/$TMP_PATH"
+					if [ $? -ne 0 ]
+					then
+						if [ $re -eq 0 ]
+						then
+							re=1
+							continue
+						else
+							break
+						fi
+					else
+						re=0
+						break
+					fi
+				done
+				if [ $re -ne 0 ]
+				then
+					echo "get remote fail"
+					exit $re
+				fi
+
+				echo "download remote "
+				while true
+				do
+					$ROOT_PATH/bin/cluster-tools download "$REMOTE_TMP/$TMP_PATH" "$LOCAL_TMP/"
+					if [ $? -ne 0 ]
+					then
+						if [ $re -eq 0 ]
+						then
+							re=1
+							continue
+						else
+							break
+						fi
+					else
+						re=0
+						break
+					fi
+				done
+				if [ $re -ne 0 ]
+				then
+					echo "download remote fail"
+					exit $re
+				fi
+				echo "put local "
+				while true
+				do
+					$ROOT_PATH/bin/hadoop-tools --local fs -put "$LOCAL_TMP/$TMP_PATH" "$local_path"
+					if [ $? -ne 0 ]
+					then
+						if [ $re -eq 0 ]
+						then
+							re=1
+							continue
+						else
+							break
+						fi
+					else
+						re=0
+						break
+					fi
+				done
+				if [ $re -ne 0 ]
+				then
+					echo "put local fail"
+				fi
+			;;
+			-put)
+				local_path=$3;
+				if [ "$4" != "" ]
+				then
+					remote_path=$4;
+				else
+					remote_path=$local_path;
+				fi
+				re=0
+				echo "get local "
+				while true
+				do
+					$ROOT_PATH/bin/hadoop-tools --local fs -get "$local_path" "$LOCAL_TMP/$TMP_PATH"
+					if [ $? -ne 0 ]
+					then
+						if [ $re -eq 0 ]
+						then
+							re=1
+							continue
+						else
+							break
+						fi
+					else
+						re=0
+						break
+					fi
+				done
+				if [ $re -ne 0 ]
+				then
+					echo "get local fail"
+					exit $re
+				fi
+
+				echo "upload remote "
+				while true
+				do
+					$ROOT_PATH/bin/cluster-tools upload "$LOCAL_TMP/$TMP_PATH" "$REMOTE_TMP/"
+					if [ $? -ne 0 ]
+					then
+						if [ $re -eq 0 ]
+						then
+							re=1
+							continue
+						else
+							break
+						fi
+					else
+						re=0
+						break
+					fi
+				done
+				if [ $re -ne 0 ]
+				then
+					echo "upload remote fail"
+					exit $re
+				fi
+				echo "put remote "
+				while true
+				do
+					$ROOT_PATH/bin/hadoop-tools --remote fs -put "$REMOTE_TMP/$TMP_PATH" "$remote_path"
+					if [ $? -ne 0 ]
+					then
+						if [ $re -eq 0 ]
+						then
+							re=1
+							continue
+						else
+							break
+						fi
+					else
+						re=0
+						break
+					fi
+				done
+				if [ $re -ne 0 ]
+				then
+					echo "put remote fail"
+				fi
+			;;
+			*)
+				echo 'not support $2 command!'
+				exit 1
+			;;
+		esac
+		$ROOT_PATH/bin/cluster-tools --remote shell "rm -rf $REMOTE_TMP/$TMP_PATH" &
+		$ROOT_PATH/bin/cluster-tools --local shell "rm -rf $LOCAL_TMP/$TMP_PATH" &
+		exit $re
+	;;
 	dfs)
 		case $2 in
 			-ls|-rmr|-rm|-touchz|-test)
@@ -33,6 +203,7 @@ case $CMD in
 			*)
 				echo 'not support $2 command!'
 				exit 1
+			;;
 		esac
 		TAG=$CMD
 		param="LOCAL=$local_path REMOTE=$remote_path SOURCE=$3 DEST=$4 PROJECT_PATH={PROJECT_PATH}"
