@@ -42,7 +42,6 @@ do
 done
 export CLUSTER_HOST=$cluster_host
 
-
 function ansible_play(){
 	playbook=$1
 	vars=`echo "$2" | sed 's/"/\\\\"/g'`
@@ -129,3 +128,8 @@ function replace_globals(){
 	filter=`eval "$awk_shell"`
 	echo $filter
 }
+
+if [ $CLUSTER_HOST != $LOCAL_MODE ]
+then
+	$ROOT_PATH/bin/tunnel change
+fi
