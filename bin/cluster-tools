@@ -11,7 +11,7 @@ function usage() {
 	echo "  type: upload download shell"
 }
 
-if [ $? != 0 -o $# = 0 ] ; then usage >&2 ; exit 1 ; fi
+if [ $? != 0 ] ; then usage >&2 ; exit 1 ; fi
 
 CMD=$1;
 
